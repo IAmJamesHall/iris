@@ -9,7 +9,9 @@ Quickstart
 1. Clone this repo: `clone https://github.com/IAmJamesHall/iris.git`
 2. In `scripts.js` on line 27, add your auth key from OpenAI (Leave 'Bearer' at the beginning of the string)
     Line 27 should look something like this:
-    `"Bearer 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",`
+    ```
+    "Bearer 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",
+    ```
 3. Load `index.html` in your browser and start chatting with ChatGPT!
 
 TODO:
