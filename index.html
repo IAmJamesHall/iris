@@ -1,0 +1,32 @@
+<html>
+  <head>
+    <title>Iris</title>
+    <link href="styles.css" rel="stylesheet" />
+
+    <!-- Highlight.js -->
+    <link
+      rel="stylesheet"
+      href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/styles/base16/solarized-dark.min.css"
+    />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/dompurify@2.2.7/dist/purify.min.js"></script>
+  <body>
+    <h1>Iris</h1>
+    <div id="container">
+      <div id="conversation">
+        <p class="message"><b>System:</b> You are a helpful AI assistant</p>
+      </div>
+      <div id="input-container">
+        <textarea
+          id="message"
+          placeholder="Write your message here"
+          autofocus
+        ></textarea>
+        <button onclick="sendMessage()">Chat</button>
+      </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+    <script src="scripts.js"></script>
+  </body>
+</html>
