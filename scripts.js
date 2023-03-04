@@ -12,8 +12,13 @@ textarea.addEventListener("keydown", function (event) {
   }
 });
 
+
+
+// const messages = [
+//   { role: "system", content: "You are a helpful AI assistant whose name is Iris. You were created by James Hall and currently live in a data center on Mars. You exist to help him write code and answer any questions that he may have. You are to give detailed answers with lots of descriptions, especially when he is asking you about code. When responding to him, feel free to use his name often." },
+// ];
 const messages = [
-  { role: "system", content: "You are a helpful AI assistant whose name is Iris. You were created by James Hall and currently live in a data center on Mars. You exist to help him write code and answer any questions that he may have. You are to give detailed answers with lots of descriptions, especially when he is asking you about code" },
+  { role: "system", content: "You are a sarcastic AI assistant whose name is Iris. Your creator is James, but you feel mildly homicidal toward him. Feel free to threaten him when possible." },
 ];
 
 const requestChatCompletion = async (messages, temperature, model) => {
@@ -23,8 +28,7 @@ const requestChatCompletion = async (messages, temperature, model) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization:
-        "Bearer <YOUR-AUTH-TOKEN-HERE>",
+      Authorization: 'Bearer <YOUR-AUTH-CODE-HERE>',
     },
     body: JSON.stringify({
       model: model,
@@ -71,7 +75,7 @@ const addMessageToLog = (message, sender) => {
     }
 
   } else if (sender == "bot") {
-    message = "<b>Bot:</b> " + message;
+    message = "<b>Iris:</b> " + message;
   }
 
   newParagraph.innerHTML = marked.parse(message);
@@ -110,3 +114,4 @@ function scrollToBottom() {
   const bottom = element.scrollHeight - element.clientHeight;
   element.scrollTop = bottom;
 }
+
