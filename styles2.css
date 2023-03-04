@@ -1,0 +1,20 @@
+.message {
+    border-color: #b9b9b9;
+    border-width: 0.1px;
+    border-style: solid;
+    padding: 10px;
+    border-radius: 5px;
+    position: relative;
+}
+
+.tokens {
+    position: absolute;
+    top: 5px;
+    right: 5px;
+    font-size: 12px;
+  }
+
+  #container {
+    max-width: 600px;
+    margin: 0 auto;
+  }
