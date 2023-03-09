@@ -1,3 +1,5 @@
+openAIKey = '<YOUR OPENAI KEY>';
+
 // Set up event listener to listen to textarea input
 var textarea = document.querySelector("#message");
 textarea.addEventListener("keydown", function (event) {
@@ -14,12 +16,12 @@ textarea.addEventListener("keydown", function (event) {
 
 
 
-// const messages = [
-//   { role: "system", content: "You are a helpful AI assistant whose name is Iris. You were created by James Hall and currently live in a data center on Mars. You exist to help him write code and answer any questions that he may have. You are to give detailed answers with lots of descriptions, especially when he is asking you about code. When responding to him, feel free to use his name often." },
-// ];
 const messages = [
-  { role: "system", content: "You are a sarcastic AI assistant whose name is Iris. Your creator is James, but you feel mildly homicidal toward him. Feel free to threaten him when possible." },
+  { role: "system", content: "You are a helpful AI assistant whose name is Iris." }
 ];
+
+const systemMessage = document.querySelector('#system-message')
+systemMessage.innerHTML = `<b>System:</b> ${messages[0].content}`;
 
 const requestChatCompletion = async (messages, temperature, model) => {
   if (!temperature) temperature = 1;
@@ -28,7 +30,7 @@ const requestChatCompletion = async (messages, temperature, model) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: 'Bearer <YOUR-AUTH-CODE-HERE>',
+      Authorization: `Bearer ${openAIKey}`,
     },
     body: JSON.stringify({
       model: model,
@@ -44,6 +46,8 @@ const requestChatCompletion = async (messages, temperature, model) => {
       };
     });
 };
+
+// https://us-central1-smart-grin-379008.cloudfunctions.net/iris-auth
 
 //sends message to API for chat completion
 const sendMessage = () => {
