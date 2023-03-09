@@ -47,7 +47,6 @@ const requestChatCompletion = async (messages, temperature, model) => {
     });
 };
 
-// https://us-central1-smart-grin-379008.cloudfunctions.net/iris-auth
 
 //sends message to API for chat completion
 const sendMessage = () => {
@@ -146,14 +145,11 @@ const route = (page) => {
   </div>`
 
 
-
-  if (page = "login") {
+  if (page == "login") {
     container.innerHTML = loginFormHTML;
-  } else if (page = "chat") {
+  } else if (page == "chat") {
     container.innerHTML = chatHTML;
   }
-
-
 }
 
 // submit username & password to auth url as json, then store the returned api key in local storage
@@ -175,7 +171,7 @@ const loginSubmit = async () => {
     })
   })
 
-  const responseJSON = response.json();
+  const responseJSON = await response.json();
 
   console.log(responseJSON);
   if (responseJSON.apiKey) {
@@ -194,9 +190,10 @@ const retrieveApiKeyFromLocalStorage = () => {
   const apiKey = localStorage.getItem("apiKey");
   if (apiKey) {
     openAIKey = apiKey;
-    console.log(apiKey);
     route('chat');
   } else {
     route('login');
   }
 }
+
+retrieveApiKeyFromLocalStorage();
