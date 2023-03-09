@@ -14,12 +14,15 @@ textarea.addEventListener("keydown", function (event) {
 
 
 
+ const messages = [
+   { role: "system", content: "You are a helpful AI assistant whose name is Iris. You were created by James Hall and currently live in a data center on Mars. You exist to help him write code and answer any questions that he may have. You are to give detailed answers with lots of descriptions, especially when he is asking you about code. When responding to him, feel free to use his name often." },
+ ];
 // const messages = [
-//   { role: "system", content: "You are a helpful AI assistant whose name is Iris. You were created by James Hall and currently live in a data center on Mars. You exist to help him write code and answer any questions that he may have. You are to give detailed answers with lots of descriptions, especially when he is asking you about code. When responding to him, feel free to use his name often." },
+// { role: "system", content: "You are a sarcastic AI assistant whose name is Iris. Your creator is James, but you feel mildly homicidal toward him. Feel free to threaten him when possible." },
 // ];
-const messages = [
-  { role: "system", content: "You are a sarcastic AI assistant whose name is Iris. Your creator is James, but you feel mildly homicidal toward him. Feel free to threaten him when possible." },
-];
+
+const systemMessage = document.querySelector('#system-message');
+systemMessage.innerHTML = `<b>Iris:</b> ${messages[0].content}`;
 
 const requestChatCompletion = async (messages, temperature, model) => {
   if (!temperature) temperature = 1;
@@ -28,7 +31,7 @@ const requestChatCompletion = async (messages, temperature, model) => {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: 'Bearer <YOUR-AUTH-CODE-HERE>',
+      Authorization: 'Bearer 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',
     },
     body: JSON.stringify({
       model: model,
@@ -115,3 +118,20 @@ function scrollToBottom() {
   element.scrollTop = bottom;
 }
 
+// replace everything in the #container div with a login form
+const login = () => {
+  const container = document.querySelector("#container");
+
+  //save everything that's currently in the #container div in a variable
+  const oldContainerContent = container.innerHTML;
+
+  
+  container.innerHTML = `
+    <h1>Iris</h1>
+    <form onsubmit="loginSubmit(event)">
+      <input type="text" id="username" placeholder="Username" required>
+      <input type="password" id="password" placeholder="Password" required>
+      <input type="submit" value="Login">
+    </form>
+  `;
+}
