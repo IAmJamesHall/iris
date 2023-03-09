@@ -73,9 +73,9 @@ const addMessageToLog = (message, sender) => {
     message = escapeAll(message);
     console.log(message);
     if (message.indexOf('\n') !== -1) { //if it contains a newline, add <pre> tags
-        message = "<b>You:</b> <pre>" + message + "</pre>";
+      message = "<b>You:</b> <pre>" + message + "</pre>";
     } else {
-        message = "<b>You:</b> " + message;
+      message = "<b>You:</b> " + message;
     }
 
   } else if (sender == "bot") {
@@ -91,48 +91,112 @@ const addMessageToLog = (message, sender) => {
 };
 
 function escapeAll(str) {
-    const htmlEscapes = {
-      '&': '&amp;',
-      '<': '&lt;',
-      '>': '&gt;',
-      '\"': '&quot;',
-      '\'': '&#39;'
-    };
-    const cssEscapes = {
-      '\"': '\\\"',
-      '\'': '\\\'',
-      '\\': '\\\\',
-      '/': '\\/',
-      '\n': '\\n',
-      '\r': '\\r',
-      '\t': '\\t'
-    };
-    return str.replace(/[&<>"']/g, function(match) {
-      return htmlEscapes[match];
-    }).replace(/[\"\'\/\\\n\r\t]/g, function(match) {
-      return cssEscapes[match];
-    }).replace(/<\/script/gi, '<\\/script');
-  }
+  const htmlEscapes = {
+    '&': '&amp;',
+    '<': '&lt;',
+    '>': '&gt;',
+    '\"': '&quot;',
+    '\'': '&#39;'
+  };
+  const cssEscapes = {
+    '\"': '\\\"',
+    '\'': '\\\'',
+    '\\': '\\\\',
+    '/': '\\/',
+    '\n': '\\n',
+    '\r': '\\r',
+    '\t': '\\t'
+  };
+  return str.replace(/[&<>"']/g, function (match) {
+    return htmlEscapes[match];
+  }).replace(/[\"\'\/\\\n\r\t]/g, function (match) {
+    return cssEscapes[match];
+  }).replace(/<\/script/gi, '<\\/script');
+}
 function scrollToBottom() {
   const element = document.documentElement;
   const bottom = element.scrollHeight - element.clientHeight;
   element.scrollTop = bottom;
 }
 
-// replace everything in the #container div with a login form
-const login = () => {
+const route = (page) => {
   const container = document.querySelector("#container");
 
-  //save everything that's currently in the #container div in a variable
-  const oldContainerContent = container.innerHTML;
 
-  
-  container.innerHTML = `
-    <h1>Iris</h1>
-    <form onsubmit="loginSubmit(event)">
-      <input type="text" id="username" placeholder="Username" required>
-      <input type="password" id="password" placeholder="Password" required>
-      <input type="submit" value="Login">
-    </form>
-  `;
+  const loginFormHTML = `
+  <h1>Iris</h1>
+  <form onsubmit="loginSubmit()">
+    <input type="text" id="username" placeholder="Username" required>
+    <input type="password" id="password" placeholder="Password" required>
+    <input type="submit" value="Login">
+  </form>
+`;
+  const chatHTML = `
+  <h1>Iris</h1>
+  <div id="conversation">
+    <p class="message" id="system-message"><b>System:</b> You are a sarcastic, mildly homicidal AI assistant</p>
+  </div>
+  <div id="input-container">
+    <textarea
+      id="message"
+      placeholder="Write your message here"
+      autofocus
+    ></textarea>
+    <button onclick="sendMessage()">Chat</button>
+  </div>`
+
+
+
+  if (page = "login") {
+    container.innerHTML = loginFormHTML;
+  } else if (page = "chat") {
+    container.innerHTML = chatHTML;
+  }
+
+
+}
+
+// submit username & password to auth url as json, then store the returned api key in local storage
+const loginSubmit = async () => {
+  const username = document.querySelector("#username").value;
+  const password = document.querySelector("#password").value;
+
+  //using proxy to bypass cors limitation
+  const authUrl = "https://proxy.cors.sh/https://us-central1-smart-grin-379008.cloudfunctions.net/iris-auth";
+
+  const response = await fetch(authUrl, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json'
+    },
+    body: JSON.stringify({
+      username: username,
+      password: password
+    })
+  })
+
+  const responseJSON = response.json();
+
+  console.log(responseJSON);
+  if (responseJSON.apiKey) {
+    storeApiKeyInLocalStorage(responseJSON.apiKey);
+    retrieveApiKeyFromLocalStorage();
+  } else {
+    console.log(responseJSON);
+  }
+}
+
+const storeApiKeyInLocalStorage = (apiKey) => {
+  localStorage.setItem("apiKey", apiKey);
+}
+
+const retrieveApiKeyFromLocalStorage = () => {
+  const apiKey = localStorage.getItem("apiKey");
+  if (apiKey) {
+    openAIKey = apiKey;
+    console.log(apiKey);
+    route('chat');
+  } else {
+    route('login');
+  }
 }
