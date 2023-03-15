@@ -2,6 +2,7 @@ const conversationSelector = document.getElementById("conversation-selector");
 const chatContainer = document.getElementById("chat-container");
 const userInput = document.getElementById("user-input");
 const submitBtn = document.getElementById("submit-btn");
+const deleteBtn = document.getElementById("delete-btn");
 
 let conversations = JSON.parse(localStorage.getItem("conversations")) || [];
 
@@ -35,43 +36,25 @@ function addMessageToConversation(index, role, content) {
   localStorage.setItem("conversations", JSON.stringify(conversations));
 }
 
-async function fetchAssistantReply(conversation) {
-  const apiKey = "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";
-  const url = "https://api.openai.com/v1/engines/gpt-3.5-turbo/completions";
-  const headers = {
-    "Content-Type": "application/json",
-    "Authorization": `Bearer ${apiKey}`,
-  };
-
-  const messages = conversation.map(message => {
-    return {
-      role: message.role,
-      content: message.content,
-    };
-  });
-
-  const requestBody = {
-    model: "gpt-3.5-turbo",
-    messages,
-  };
-
-  try {
-    const response = await fetch(url, {
-      method: "POST",
-      headers: headers,
-      body: JSON.stringify(requestBody),
-    });
-
-    if (!response.ok) {
-      throw new Error(`Error: ${response.status}`);
-    }
-
-    const data = await response.json();
-    return data.choices[0].message.content;
-  } catch (error) {
-    console.error("Error fetching assistant reply:", error);
-    return "I'm sorry, I cannot provide a response at the moment.";
-  }
+async function fetchAssistantReply(conversation, model, temperature) {
+  const apiKey = "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";
+  if (!temperature) temperature = 1;
+  if (!model) model = "gpt-3.5-turbo";
+  return fetch("https://api.openai.com/v1/chat/completions", {
+    method: "POST",
+    headers: {
+      "Content-Type": "application/json",
+      Authorization: `Bearer ${apiKey}`,
+    },
+    body: JSON.stringify({
+      model: model,
+      messages: conversation,
+      temperature: temperature,
+    }),
+  })
+    .then((response) => response.json())
+    .then((data) => { return data.choices[0].message.content})
+    .catch((error) => console.log(error));
 }
 
 conversationSelector.addEventListener("change", () => {
@@ -102,5 +85,29 @@ submitBtn.addEventListener("click", async () => {
     }
   }
 });
+
+deleteBtn.addEventListener("click", () => {
+  deleteCurrentConversation();
+});
+
+
+function deleteCurrentConversation() {
+  const selectedConversation = conversationSelector.value;
+
+  if (selectedConversation) {
+    // Remove the conversation from local storage
+    localStorage.removeItem(selectedConversation);
+
+    // Remove the option from the dropdown menu
+    const selectedOption = conversationSelector.querySelector(`option[value="${selectedConversation}"]`);
+    conversationSelector.removeChild(selectedOption);
+
+    // Clear the chat container
+    chatContainer.innerHTML = '';
+
+    // Load the new selected conversation (if any)
+    loadConversation();
+  }
+}
 
 updateConversationSelector();
