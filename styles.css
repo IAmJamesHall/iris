@@ -1,90 +1,94 @@
+/* Set the font and background color of the page */
 body {
-    font-family: Arial, sans-serif;
-    background-color: #1c1c1c;
-    color: #eee;
+  font-family: Arial, sans-serif;
+  background-color: #f2f2f2;
   }
   
-  h1 {
-    text-align: center;
-    color: #fff;
-    margin-top: 50px;
+  /* Style the conversation selector label */
+  label {
+  font-weight: bold;
   }
   
+  /* Style the conversation selector */
+  select {
+  padding: 6px;
+  margin: 10px;
+  border: none;
+  border-radius: 3px;
+  background-color: white;
+  color: #333;
+  }
+  
+  /* Style the delete button */
+  #delete-btn {
+  padding: 6px 12px;
+  margin: 10px;
+  border: none;
+  border-radius: 3px;
+  background-color: #f44336;
+  color: white;
+  }
+  
+  /* Style the conversation container */
   #conversation {
-    background-color: #2a2a2a;
-    border-radius: 10px;
-    box-shadow: 0 3px 6px rgba(255, 255, 255, 0.1);
-    /* max-width: 600px;
-    margin: 0 auto; */
-    padding: 20px;
-    margin-bottom: 20px;
-  }
-
-  #container {
-    max-width: 600px;
-    margin: 0 auto;
+  padding: 10px;
+  margin: 10px;
+  border-radius: 3px;
+  background-color: white;
+  box-shadow: 0px 0px 5px #888;
+  max-height: 400px;
+  overflow-y: scroll;
   }
   
-  .message {
-    background-color: #3a3a3a;
-    color: #eee;
-    padding: 10px;
-    border-radius: 5px;
-    margin: 10px 0;
-    border: 1px solid #555;
-    box-shadow: 0px 1px 3px rgba(0, 0, 0, 0.3);
-    line-height: 1.5em;
-    position: relative;
+  /* Style the user input box */
+  #user-input {
+  padding: 6px;
+  margin: 10px;
+  border: none;
+  border-radius: 3px;
+  background-color: white;
+  color: #333;
+  width: 70%;
   }
   
-  .bot {
-    background-color: #363535;
+  /* Style the send button */
+  #submit-btn {
+  padding: 6px 12px;
+  margin: 10px;
+  border: none;
+  border-radius: 3px;
+  background-color: #4CAF50;
+  color: white;
   }
   
-  .user {
-    background-color: #555;
+  /* Style the send button when disabled */
+  #submit-btn:disabled {
+  background-color: #ccc;
+  color: #666;
   }
   
-  textarea {
-    width: 100%;
-    padding: 12px 20px;
-    margin: 0;
-    box-sizing: border-box;
-    border: 2px solid #555;
-    border-radius: 4px;
-    background-color: #2a2a2a;
-    color: #eee;
+  /* Style the scrollbar */
+  ::-webkit-scrollbar {
+  width: 8px;
   }
   
-  button {
-    width: 20%;
-    background-color: #2d642f;
-    color: white;
-    padding: 14px 20px;
-    margin: 10px 0 0;
-    border: none;
-    border-radius: 4px;
-    cursor: pointer;
+  ::-webkit-scrollbar-track {
+  background-color: #f2f2f2;
   }
   
-  button:hover {
-    background-color: #2f6832;
+  ::-webkit-scrollbar-thumb {
+  background-color: #888;
   }
   
-  .input-container {
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    width: 100%;
-    background-color: #2a2a2a;
-    padding: 20px;
-    box-sizing: border-box;
-    border-top: 1px solid #555;
+  /* Style the scrollbar on Firefox */
+  scrollbar {
+  width: 8px;
   }
   
-  .tokens {
-    position: absolute;
-    top: 5px;
-    right: 5px;
-    font-size: 12px;
+  scrollbar-track {
+  background-color: #f2f2f2;
+  }
+  
+  scrollbar-thumb {
+  background-color: #888;
   }
