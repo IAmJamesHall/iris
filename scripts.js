@@ -6,12 +6,12 @@ var textarea = document.querySelector("#message");
 textarea.addEventListener("keydown", function (event) {
   // If the user presses enter and shift together
   if (event.key === "Enter" && event.shiftKey) {
-    textarea.value += "\n";
+    textarea.value += "\n"; //TODO: change this so the newline is added at cursor, not end of the box
   } else if (event.key === "Enter") {
     // If the user presses only enter
     event.preventDefault();
     sendMessage();
-  } else if (event.metaKey && event.key === "j") {
+  } else if ((event.metaKey || event.ctrlKey) && event.key === "j") {
     event.preventDefault();
     clearChat();
   }
@@ -22,9 +22,6 @@ let conversations = JSON.parse(localStorage.getItem("conversations")) || [
   [{ role: "system", content: "You are a helpful AI assistant whose name is Iris." }]
 ];
 
-
-const systemMessage = document.querySelector('#system-message')
-systemMessage.innerHTML = `<b>System:</b> ${conversations[0].content}`;
 
 const requestChatCompletion = async (messages, temperature, model) => {
   if (!temperature) temperature = 1;
@@ -51,16 +48,19 @@ const requestChatCompletion = async (messages, temperature, model) => {
     });
 };
 
-function displayConversation() { //TODO: this is sloppy b/c we're rewriting the whole page every time
+const displayConversation = () => { //TODO: this is sloppy b/c we're rewriting the whole page every time
+  console.log('displaying conversation');
   const conversation = document.querySelector("#conversation");
   conversation.innerHTML = "";
   conversations[0].forEach(({ role, content }) => { //TODO: change hard-coded index #
     const message = document.createElement("p");
     message.classList.add('message');
-    if (role == "assistant") message.classList.add("bot");
-    else if (role == "user") message.classList.add("user");
+    let sender = "System";
+    if (role == "assistant") { message.classList.add("bot"); sender = "Iris" }
+    else if (role == "user") { message.classList.add("user"); sender = "You" }
+    else if (role == "system") { message.classList.add("system"); sender = "System" }
     const cleanerContent = marked.parse(content); //TODO: add more sanitization here
-    message.innerHTML = `<b>${role}:</b> ${cleanerContent}`;
+    message.innerHTML = `<b>${sender}:</b> ${cleanerContent}`;
     conversation.appendChild(message);
   });
   window.scrollTo(0, document.body.scrollHeight);
@@ -108,5 +108,16 @@ function scrollToBottom() {
   element.scrollTop = bottom;
 }
 
-
 displayConversation();
+
+
+const systemMessage = document.querySelector('.system > p');
+systemMessage.addEventListener('click', () => {
+  systemMessage.contentEditable = true;
+  systemMessage.focus();
+})
+systemMessage.addEventListener('input', () => {
+  conversations[0][0].content = systemMessage.innerHTML;
+  localStorage.setItem("conversations", JSON.stringify(conversations));
+})
+
