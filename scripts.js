@@ -37,7 +37,7 @@ function addMessageToConversation(index, role, content) {
 }
 
 async function fetchAssistantReply(conversation, model, temperature) {
-  const apiKey = "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";
+  const apiKey = "<insert-api-key-here>";
   if (!temperature) temperature = 1;
   if (!model) model = "gpt-3.5-turbo";
   return fetch("https://api.openai.com/v1/chat/completions", {
