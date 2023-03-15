@@ -1,4 +1,4 @@
-openAIKey = '<YOUR OPENAI KEY>';
+openAIKey = '<YOUR-API-KEY-HERE>';
 
 // Set up event listener to listen to textarea input
 var textarea = document.querySelector("#message");
@@ -151,49 +151,3 @@ const route = (page) => {
     container.innerHTML = chatHTML;
   }
 }
-
-// submit username & password to auth url as json, then store the returned api key in local storage
-const loginSubmit = async () => {
-  const username = document.querySelector("#username").value;
-  const password = document.querySelector("#password").value;
-
-  //using proxy to bypass cors limitation
-  const authUrl = "https://proxy.cors.sh/https://us-central1-smart-grin-379008.cloudfunctions.net/iris-auth";
-
-  const response = await fetch(authUrl, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json'
-    },
-    body: JSON.stringify({
-      username: username,
-      password: password
-    })
-  })
-
-  const responseJSON = await response.json();
-
-  console.log(responseJSON);
-  if (responseJSON.apiKey) {
-    storeApiKeyInLocalStorage(responseJSON.apiKey);
-    retrieveApiKeyFromLocalStorage();
-  } else {
-    console.log(responseJSON);
-  }
-}
-
-const storeApiKeyInLocalStorage = (apiKey) => {
-  localStorage.setItem("apiKey", apiKey);
-}
-
-const retrieveApiKeyFromLocalStorage = () => {
-  const apiKey = localStorage.getItem("apiKey");
-  if (apiKey) {
-    openAIKey = apiKey;
-    route('chat');
-  } else {
-    route('login');
-  }
-}
-
-retrieveApiKeyFromLocalStorage();
