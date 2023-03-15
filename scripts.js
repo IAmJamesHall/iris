@@ -1,153 +1,106 @@
-openAIKey = '<YOUR-API-KEY-HERE>';
+const conversationSelector = document.getElementById("conversation-selector");
+const chatContainer = document.getElementById("chat-container");
+const userInput = document.getElementById("user-input");
+const submitBtn = document.getElementById("submit-btn");
 
-// Set up event listener to listen to textarea input
-var textarea = document.querySelector("#message");
-textarea.addEventListener("keydown", function (event) {
-  // If the user presses enter and shift together
-  if (event.key === "Enter" && event.shiftKey) {
-    textarea.value += "\n";
-  } else if (event.key === "Enter") {
-    // If the user presses only enter
-    event.preventDefault();
+let conversations = JSON.parse(localStorage.getItem("conversations")) || [];
 
-    sendMessage();
+function updateConversationSelector() {
+  conversationSelector.innerHTML = `<option value="new">New Conversation</option>`;
+  conversations.forEach((conversation, index) => {
+    const option = document.createElement("option");
+    option.value = index;
+    option.text = `Conversation ${index + 1}`;
+    conversationSelector.add(option);
+  });
+}
+
+function displayConversation(index) {
+  conversation.innerHTML = "";
+  conversations[index].forEach(({ role, content }) => {
+    const message = document.createElement("div");
+    message.className = role;
+    message.textContent = `${role}: ${content}`;
+    conversation.appendChild(message);
+  });
+}
+
+function addMessageToConversation(index, role, content) {
+  const message = { role, content };
+  if (index === "new") {
+    conversations.push([message]);
+  } else {
+    conversations[index].push(message);
+  }
+  localStorage.setItem("conversations", JSON.stringify(conversations));
+}
+
+async function fetchAssistantReply(conversation) {
+  const apiKey = "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";
+  const url = "https://api.openai.com/v1/engines/gpt-3.5-turbo/completions";
+  const headers = {
+    "Content-Type": "application/json",
+    "Authorization": `Bearer ${apiKey}`,
+  };
+
+  const messages = conversation.map(message => {
+    return {
+      role: message.role,
+      content: message.content,
+    };
+  });
+
+  const requestBody = {
+    model: "gpt-3.5-turbo",
+    messages,
+  };
+
+  try {
+    const response = await fetch(url, {
+      method: "POST",
+      headers: headers,
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      throw new Error(`Error: ${response.status}`);
+    }
+
+    const data = await response.json();
+    return data.choices[0].message.content;
+  } catch (error) {
+    console.error("Error fetching assistant reply:", error);
+    return "I'm sorry, I cannot provide a response at the moment.";
+  }
+}
+
+conversationSelector.addEventListener("change", () => {
+  const selectedIndex = conversationSelector.value;
+  if (selectedIndex !== "new") {
+    displayConversation(selectedIndex);
+  } else {
+    chatContainer.innerHTML = "";
   }
 });
 
+submitBtn.addEventListener("click", async () => {
+  const selectedIndex = conversationSelector.value;
+  const userMessage = userInput.value.trim();
 
+  if (userMessage) {
+    userInput.value = "";
+    addMessageToConversation(selectedIndex, "user", userMessage);
+    displayConversation(selectedIndex === "new" ? conversations.length - 1 : selectedIndex);
 
-const messages = [
-  { role: "system", content: "You are a helpful AI assistant whose name is Iris." }
-];
+    const assistantReply = await fetchAssistantReply(conversations[selectedIndex === "new" ? conversations.length - 1 : selectedIndex]);
+    addMessageToConversation(selectedIndex === "new" ? conversations.length - 1 : selectedIndex, "assistant", assistantReply);
+    displayConversation(selectedIndex === "new" ? conversations.length - 1 : selectedIndex);
 
-const systemMessage = document.querySelector('#system-message')
-systemMessage.innerHTML = `<b>System:</b> ${messages[0].content}`;
-
-const requestChatCompletion = async (messages, temperature, model) => {
-  if (!temperature) temperature = 1;
-  if (!model) model = "gpt-3.5-turbo";
-  return fetch("https://api.openai.com/v1/chat/completions", {
-    method: "POST",
-    headers: {
-      "Content-Type": "application/json",
-      Authorization: `Bearer ${openAIKey}`,
-    },
-    body: JSON.stringify({
-      model: model,
-      messages: messages,
-      temperature: temperature,
-    }),
-  })
-    .then((response) => response.json())
-    .then((data) => {
-      return {
-        message: data.choices[0].message.content,
-        usage: data.usage.total_tokens,
-      };
-    });
-};
-
-
-//sends message to API for chat completion
-const sendMessage = () => {
-  const messageInput = document.querySelector("#message");
-  addMessageToLog(messageInput.value, "user"); // add message to the page
-  messages.push({ role: "user", content: messageInput.value }); //add the new message to the message list
-  messageInput.value = ""; //set the input to empty
-  messageInput.focus(); //focus on the input box
-
-  requestChatCompletion(messages).then((response) => {
-    console.log(response);
-    messages.push({ role: "assistant", content: response.message });
-    price = response.usage * 0.000002
-    addMessageToLog(`${response.message}<i class="tokens">${response.usage} - $${price.toFixed(6)}</i>`, "bot");
-  });
-};
-
-const addMessageToLog = (message, sender) => {
-  const conversation = document.querySelector("#conversation");
-  const newParagraph = document.createElement("p");
-
-  if (sender == "user") {
-    message = escapeAll(message);
-    console.log(message);
-    if (message.indexOf('\n') !== -1) { //if it contains a newline, add <pre> tags
-      message = "<b>You:</b> <pre>" + message + "</pre>";
-    } else {
-      message = "<b>You:</b> " + message;
+    if (selectedIndex === "new") {
+      updateConversationSelector();
+      conversationSelector.value = conversations.length - 1;
     }
-
-  } else if (sender == "bot") {
-    message = "<b>Iris:</b> " + message;
   }
+});
 
-  newParagraph.innerHTML = marked.parse(message);
-  newParagraph.classList.add("message");
-  newParagraph.classList.add(sender);
-  conversation.appendChild(newParagraph);
-  window.scrollTo(0, document.body.scrollHeight);
-  hljs.highlightAll();
-};
-
-function escapeAll(str) {
-  const htmlEscapes = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '\"': '&quot;',
-    '\'': '&#39;'
-  };
-  const cssEscapes = {
-    '\"': '\\\"',
-    '\'': '\\\'',
-    '\\': '\\\\',
-    '/': '\\/',
-    '\n': '\\n',
-    '\r': '\\r',
-    '\t': '\\t'
-  };
-  return str.replace(/[&<>"']/g, function (match) {
-    return htmlEscapes[match];
-  }).replace(/[\"\'\/\\\n\r\t]/g, function (match) {
-    return cssEscapes[match];
-  }).replace(/<\/script/gi, '<\\/script');
-}
-function scrollToBottom() {
-  const element = document.documentElement;
-  const bottom = element.scrollHeight - element.clientHeight;
-  element.scrollTop = bottom;
-}
-
-const route = (page) => {
-  const container = document.querySelector("#container");
-
-
-  const loginFormHTML = `
-  <h1>Iris</h1>
-  <form onsubmit="loginSubmit()">
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <input type="submit" value="Login">
-  </form>
-`;
-  const chatHTML = `
-  <h1>Iris</h1>
-  <div id="conversation">
-    <p class="message" id="system-message"><b>System:</b> You are a sarcastic, mildly homicidal AI assistant</p>
-  </div>
-  <div id="input-container">
-    <textarea
-      id="message"
-      placeholder="Write your message here"
-      autofocus
-    ></textarea>
-    <button onclick="sendMessage()">Chat</button>
-  </div>`
-
-
-  if (page == "login") {
-    container.innerHTML = loginFormHTML;
-  } else if (page == "chat") {
-    container.innerHTML = chatHTML;
-  }
-}
+updateConversationSelector();
