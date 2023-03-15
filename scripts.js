@@ -1,31 +1,32 @@
-openAIKey = '<YOUR-API-KEY-HERE>';
+let openAIKey = localStorage.openAIKey || prompt('Enter your OpenAI API key');
+localStorage.openAIKey = openAIKey;
 
 // Set up event listener to listen to textarea input
 var textarea = document.querySelector("#message");
 textarea.addEventListener("keydown", function (event) {
   // If the user presses enter and shift together
   if (event.key === "Enter" && event.shiftKey) {
-    textarea.value += "\n";
+    textarea.value += "\n"; //TODO: change this so the newline is added at cursor, not end of the box
   } else if (event.key === "Enter") {
     // If the user presses only enter
     event.preventDefault();
-
     sendMessage();
+  } else if ((event.metaKey || event.ctrlKey) && event.key === "j") {
+    event.preventDefault();
+    clearChat();
   }
 });
 
 
-
-const messages = [
-  { role: "system", content: "You are a helpful AI assistant whose name is Iris." }
+let conversations = JSON.parse(localStorage.getItem("conversations")) || [
+  [{ role: "system", content: "You are a helpful AI assistant whose name is Iris." }]
 ];
 
-const systemMessage = document.querySelector('#system-message')
-systemMessage.innerHTML = `<b>System:</b> ${messages[0].content}`;
 
 const requestChatCompletion = async (messages, temperature, model) => {
   if (!temperature) temperature = 1;
   if (!model) model = "gpt-3.5-turbo";
+  console.log(messages);
   return fetch("https://api.openai.com/v1/chat/completions", {
     method: "POST",
     headers: {
@@ -40,114 +41,83 @@ const requestChatCompletion = async (messages, temperature, model) => {
   })
     .then((response) => response.json())
     .then((data) => {
+      localStorage.usage = data.usage;
       return {
         message: data.choices[0].message.content,
-        usage: data.usage.total_tokens,
       };
     });
 };
+
+const displayConversation = () => { //TODO: this is sloppy b/c we're rewriting the whole page every time
+  console.log('displaying conversation');
+  const conversation = document.querySelector("#conversation");
+  conversation.innerHTML = "";
+  conversations[0].forEach(({ role, content }) => { //TODO: change hard-coded index #
+    const message = document.createElement("p");
+    message.classList.add('message');
+    let sender = "System";
+    if (role == "assistant") { message.classList.add("bot"); sender = "Iris" }
+    else if (role == "user") { message.classList.add("user"); sender = "You" }
+    else if (role == "system") { message.classList.add("system"); sender = "System" }
+    const cleanerContent = marked.parse(content); //TODO: add more sanitization here
+    message.innerHTML = `<b>${sender}:</b> ${cleanerContent}`;
+    conversation.appendChild(message);
+  });
+  window.scrollTo(0, document.body.scrollHeight);
+  hljs.highlightAll();
+}
+
+function addMessageToConversation(index, role, content) {
+  const message = { role, content };
+  if (index === "new") {
+    conversations.push([message]);
+  } else {
+    conversations[0].push(message); //TODO: replace w/ 'index' (also replace null value in calls)
+  }
+  localStorage.setItem("conversations", JSON.stringify(conversations));
+}
 
 
 //sends message to API for chat completion
 const sendMessage = () => {
   const messageInput = document.querySelector("#message");
-  addMessageToLog(messageInput.value, "user"); // add message to the page
-  messages.push({ role: "user", content: messageInput.value }); //add the new message to the message list
+  addMessageToConversation(null, "user", messageInput.value, "user"); //TODO: replace null w/ index
+  displayConversation();
   messageInput.value = ""; //set the input to empty
   messageInput.focus(); //focus on the input box
 
-  requestChatCompletion(messages).then((response) => {
+  requestChatCompletion(conversations[0]).then((response) => {
     console.log(response);
-    messages.push({ role: "assistant", content: response.message });
-    price = response.usage * 0.000002
-    addMessageToLog(`${response.message}<i class="tokens">${response.usage} - $${price.toFixed(6)}</i>`, "bot");
+    addMessageToConversation(null, "assistant", response.message, "assistant"); //TODO: replace null w/ index
+    displayConversation();
+
   });
 };
 
-const addMessageToLog = (message, sender) => {
-  const conversation = document.querySelector("#conversation");
-  const newParagraph = document.createElement("p");
-
-  if (sender == "user") {
-    message = escapeAll(message);
-    console.log(message);
-    if (message.indexOf('\n') !== -1) { //if it contains a newline, add <pre> tags
-      message = "<b>You:</b> <pre>" + message + "</pre>";
-    } else {
-      message = "<b>You:</b> " + message;
-    }
-
-  } else if (sender == "bot") {
-    message = "<b>Iris:</b> " + message;
-  }
-
-  newParagraph.innerHTML = marked.parse(message);
-  newParagraph.classList.add("message");
-  newParagraph.classList.add(sender);
-  conversation.appendChild(newParagraph);
-  window.scrollTo(0, document.body.scrollHeight);
-  hljs.highlightAll();
-};
-
-function escapeAll(str) {
-  const htmlEscapes = {
-    '&': '&amp;',
-    '<': '&lt;',
-    '>': '&gt;',
-    '\"': '&quot;',
-    '\'': '&#39;'
-  };
-  const cssEscapes = {
-    '\"': '\\\"',
-    '\'': '\\\'',
-    '\\': '\\\\',
-    '/': '\\/',
-    '\n': '\\n',
-    '\r': '\\r',
-    '\t': '\\t'
-  };
-  return str.replace(/[&<>"']/g, function (match) {
-    return htmlEscapes[match];
-  }).replace(/[\"\'\/\\\n\r\t]/g, function (match) {
-    return cssEscapes[match];
-  }).replace(/<\/script/gi, '<\\/script');
+const clearChat = () => {
+  localStorage.conversations = JSON.stringify([
+    [{ role: "system", content: "You are a helpful AI assistant whose name is Iris." }]
+  ]);
+  conversations = JSON.parse(localStorage.getItem("conversations"))
+  displayConversation();
 }
+
 function scrollToBottom() {
   const element = document.documentElement;
   const bottom = element.scrollHeight - element.clientHeight;
   element.scrollTop = bottom;
 }
 
-const route = (page) => {
-  const container = document.querySelector("#container");
+displayConversation();
 
 
-  const loginFormHTML = `
-  <h1>Iris</h1>
-  <form onsubmit="loginSubmit()">
-    <input type="text" id="username" placeholder="Username" required>
-    <input type="password" id="password" placeholder="Password" required>
-    <input type="submit" value="Login">
-  </form>
-`;
-  const chatHTML = `
-  <h1>Iris</h1>
-  <div id="conversation">
-    <p class="message" id="system-message"><b>System:</b> You are a sarcastic, mildly homicidal AI assistant</p>
-  </div>
-  <div id="input-container">
-    <textarea
-      id="message"
-      placeholder="Write your message here"
-      autofocus
-    ></textarea>
-    <button onclick="sendMessage()">Chat</button>
-  </div>`
+const systemMessage = document.querySelector('.system > p');
+systemMessage.addEventListener('click', () => {
+  systemMessage.contentEditable = true;
+  systemMessage.focus();
+})
+systemMessage.addEventListener('input', () => {
+  conversations[0][0].content = systemMessage.innerHTML;
+  localStorage.setItem("conversations", JSON.stringify(conversations));
+})
 
-
-  if (page == "login") {
-    container.innerHTML = loginFormHTML;
-  } else if (page == "chat") {
-    container.innerHTML = chatHTML;
-  }
-}

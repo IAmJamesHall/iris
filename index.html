@@ -26,7 +26,6 @@
       <!-- <button id="login" onclick="login()">Login</button> -->
       <h1>Iris</h1>
       <div id="conversation">
-        <p class="message" id="system-message"><b>System:</b> You are a sarcastic, mildly homicidal AI assistant</p>
       </div>
       <div id="input-container">
         <textarea
@@ -34,7 +33,8 @@
           placeholder="Write your message here"
           autofocus
         ></textarea>
-        <button onclick="sendMessage()">Chat</button>
+        <button onclick="sendMessage()">Chat (Enter)</button>
+        <button onclick="clearChat()">Clear (Cmd+J)</button>
       </div>
     </div>
 
