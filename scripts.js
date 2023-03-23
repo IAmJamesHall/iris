@@ -41,7 +41,10 @@ const requestChatCompletion = async (messages, temperature, model) => {
   })
     .then((response) => response.json())
     .then((data) => {
-      localStorage.usage = data.usage;
+      //add usage to local storage
+      previousUsage = Number(localStorage.usage) || 0;
+      localStorage.usage = previousUsage + Number(data.usage.total_tokens);
+
       return {
         message: data.choices[0].message.content,
       };
@@ -65,6 +68,9 @@ const displayConversation = () => { //TODO: this is sloppy b/c we're rewriting t
   });
   window.scrollTo(0, document.body.scrollHeight);
   hljs.highlightAll();
+
+  const usageDiv = document.querySelector('#usage');
+  usageDiv.innerHTML = `Total Tokens: ${localStorage.usage}. Total Cost: $${( localStorage.usage * 0.000002 ).toFixed(6)}`;
 }
 
 function addMessageToConversation(index, role, content) {
